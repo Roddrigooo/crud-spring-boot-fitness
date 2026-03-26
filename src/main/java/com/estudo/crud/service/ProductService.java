@@ -1,6 +1,7 @@
 package com.estudo.crud.service;
 
 
+import com.estudo.crud.dto.ProductUpdateDTO;
 import com.estudo.crud.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +10,8 @@ import com.estudo.crud.dto.ProductResponseDTO;
 import com.estudo.crud.entity.Product;
 import com.estudo.crud.exception.BusinessException;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class ProductService {
@@ -60,6 +63,38 @@ public class ProductService {
 
     }
 
+    // busca todos
+    @Transactional(readOnly = true)
+    public List<ProductResponseDTO> findAll() {
+        return productRepository.findAll().stream().map(this::toResponseDTO).toList();
+
+    }
+
+    //atualizar
+    @Transactional
+    public ProductResponseDTO update(Long id, ProductUpdateDTO dto){
+        Product product = productRepository.findById(id).orElseThrow(()-> new BusinessException("Produto não encontrado com id: " + id));
+
+        product.setName(dto.getName());
+        product.setDescription(dto.getDescription());
+        product.setPrice(dto.getPrice());
+        product.setCategory(dto.getCategory());
+        product.setSize(dto.getSize());
+        product.setColor(dto.getColor());
+        product.setStock(dto.getStock());
+
+        return toResponseDTO(product);
+    }
+
+    //deletar
+    @Transactional
+    public void delete(Long id){
+        Product product = productRepository.findById(id).orElseThrow(() -> new BusinessException("Produto não encontrado com id: " + id));
+
+        product.setActive(false);
+    }
+
+    //transforma entity -> DTO
     private ProductResponseDTO toResponseDTO(Product product) {
         ProductResponseDTO response = new ProductResponseDTO();
         response.setId(product.getId());
